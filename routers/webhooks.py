@@ -45,12 +45,9 @@ def message_text(event):
 
 @handler.add(MessageEvent, message=AudioMessage)
 def audio_text(event):
-    print("!!!!!!!!!!!!!!!!!!!!!!")
-    print(event)
-    print("!!!!!!!!!!!!!!!!!!!!!!")
 
-    write_audio_file(event.message.id)
-    google_tts()
+    write_audio_file(event.message.id, event.source.user_id)
+    google_tts(event.source.user_id)
 
     line_bot_api.reply_message(
         event.reply_token,

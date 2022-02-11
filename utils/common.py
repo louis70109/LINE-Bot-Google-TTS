@@ -18,23 +18,27 @@ def upload_data_to_gcs(bucket_name, data, target_key):
     return None
 
 
-def write_audio_file(message_id):
+def write_audio_file(message_id, user_id):
     line_bot_api = LineBotApi(os.getenv('LINE_CHANNEL_ACCESS_TOKEN'))
-    message_content = line_bot_api.get_message_content(message_id)
+    try:
+        message_content = line_bot_api.get_message_content(message_id)
+    except Exception:
+        raise Exception('Message content not found.')
+
     total = b''
     for chunk in message_content.iter_content():
         total += chunk
 
-    upload_data_to_gcs(os.getenv('GOOGLE_BUCKET'), total, 'hello.mp3')
+    upload_data_to_gcs(os.getenv('GOOGLE_BUCKET'), total, f'{user_id}.mp3')
 
 
-def google_tts():
+def google_tts(user_id):
     os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
     # Instantiates a client
     client = speech.SpeechClient()
 
     # The name of the audio file to transcribe
-    gcs_uri = f"gs://{os.getenv('GOOGLE_BUCKET')}/hello.mp3"
+    gcs_uri = f"gs://{os.getenv('GOOGLE_BUCKET')}/{user_id}.mp3"
 
     audio = speech.RecognitionAudio(uri=gcs_uri)
     config = speech.RecognitionConfig(
@@ -46,7 +50,7 @@ def google_tts():
     operation = client.long_running_recognize(config=config, audio=audio)
 
     print("Waiting for operation to complete...")
-    response = operation.result(timeout=90)
+    response = operation.result(timeout=15)
 
     # Each result is for a consecutive portion of the audio. Iterate through
     # them to get the transcripts for the entire audio file.
