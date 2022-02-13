@@ -7,7 +7,7 @@
   - ADD KEY -> Create a new key -> Select `JSON` -> Download it
   
   
-# STT
+# Speech to Text
 
 - Use IAM key to access STT API.
 - [code reference](https://cloud.google.com/speech-to-text/docs/samples/speech-transcribe-async-gcs#speech_transcribe_async_gcs-python)
@@ -28,15 +28,19 @@ config = speech.RecognitionConfig(
 
 ## Dialogflow
 
-In progress...
-
 - Set on your [Dialogflow Console](https://dialogflow.cloud.google.com/)
 - Add Entities.
 - Add Entities in Intents dialog.
-- Add more and more dialog to train it.
+- Add more and more phrases to train it. See [doc](https://cloud.google.com/dialogflow/es/docs/intents-training-phrases#annotation).
 
 Get intents.
 
 ```python
 intent = dict(response.query_result.parameters)
 ```
+
+> Code from [Quick Start](https://cloud.google.com/dialogflow/es/docs/quick/api).
+
+# LICENSE
+
+MIT
