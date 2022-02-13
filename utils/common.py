@@ -1,8 +1,7 @@
 import os
 
 from linebot import LineBotApi
-from google.cloud import speech
-from google.cloud import storage
+from google.cloud import speech,  storage, dialogflow
 
 
 def upload_data_to_gcs(bucket_name, data, target_key):
@@ -58,3 +57,30 @@ def google_tts(user_id):
         # The first alternative is the most likely one for this portion.
         print(u"Transcript: {}".format(result.alternatives[0].transcript))
         print("Confidence: {}".format(result.alternatives[0].confidence))
+        # if > 0.9
+        return result.alternatives[0].transcript
+
+
+def detect_intent_texts(project_id, session_id, texts, language_code):
+    """Returns the result of detect intent with texts as inputs.
+
+    Using the same `session_id` between requests allows continuation
+    of the conversation."""
+
+    session_client = dialogflow.SessionsClient()
+
+    session = session_client.session_path(project_id, session_id)
+    print("Session path: {}\n".format(session))
+
+    text_input = dialogflow.TextInput(text=texts, language_code=language_code)
+
+    query_input = dialogflow.QueryInput(text=text_input)
+
+    response = session_client.detect_intent(
+        request={"session": session, "query_input": query_input}
+    )
+    intent = dict(response.query_result.parameters)
+    print(intent)
+    if intent.get('self') and intent.get('drink'):
+        return f"想喝「{intent.get('drink')}」是不是"
+    return "我聽不懂喔"

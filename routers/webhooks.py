@@ -8,7 +8,7 @@ from linebot.models import TextMessage, MessageEvent, TextSendMessage, StickerMe
     StickerSendMessage, AudioMessage
 from pydantic import BaseModel
 
-from utils.common import write_audio_file, google_tts
+from utils.common import write_audio_file, google_tts, detect_intent_texts
 
 line_bot_api = LineBotApi(os.getenv('LINE_CHANNEL_ACCESS_TOKEN'))
 handler = WebhookHandler(os.getenv('LINE_CHANNEL_SECRET'))
@@ -45,11 +45,12 @@ def message_text(event):
 
 @handler.add(MessageEvent, message=AudioMessage)
 def audio_text(event):
-
-    write_audio_file(event.message.id, event.source.user_id)
-    google_tts(event.source.user_id)
-
+    user_id = event.source.user_id
+    write_audio_file(event.message.id, user_id)
+    speech_content = google_tts(user_id)
+    message = detect_intent_texts(project_id=os.getenv('DIALOGFLOW_PROJECT_ID'), session_id=user_id,
+                        texts=speech_content, language_code='zh-TW')
     line_bot_api.reply_message(
         event.reply_token,
-        StickerSendMessage(package_id='6136', sticker_id='10551379')
+        TextSendMessage(text=message)
     )
