@@ -29,3 +29,14 @@ config = speech.RecognitionConfig(
 ## Dialogflow
 
 In progress...
+
+- Set on your [Dialogflow Console](https://dialogflow.cloud.google.com/)
+- Add Entities.
+- Add Entities in Intents dialog.
+- Add more and more dialog to train it.
+
+Get intents.
+
+```python
+intent = dict(response.query_result.parameters)
+```
