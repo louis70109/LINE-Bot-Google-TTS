@@ -21,3 +21,4 @@ var/
 .DS_Store
 .tox/
 line-tw-devrel.json
+line-tw-devrel-firebase-adminsdk.json

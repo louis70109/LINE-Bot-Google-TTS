@@ -13,3 +13,5 @@ ffmpeg-python
 google-cloud-speech
 google-cloud-storage
 google-cloud-dialogflow
+firebase_admin
+google-cloud-firestore

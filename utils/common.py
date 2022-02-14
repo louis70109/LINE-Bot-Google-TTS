@@ -1,7 +1,7 @@
 import os
 
 from linebot import LineBotApi
-from google.cloud import speech,  storage, dialogflow
+from google.cloud import speech, storage, dialogflow
 
 
 def upload_data_to_gcs(bucket_name, data, target_key):
@@ -80,7 +80,11 @@ def detect_intent_texts(project_id, session_id, texts, language_code):
         request={"session": session, "query_input": query_input}
     )
     intent = dict(response.query_result.parameters)
-    print(intent)
-    if intent.get('self') and intent.get('drink'):
-        return f"想喝「{intent.get('drink')}」是不是"
-    return "我聽不懂喔"
+    if intent.get('drink') and intent.get('sugar') and intent.get('ice'):
+        return {
+            'item': intent.get('drink'),
+            'sugar': intent.get('sugar'),
+            'ice': intent.get('ice')
+        }
+    else:
+        return None
