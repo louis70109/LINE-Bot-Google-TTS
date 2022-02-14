@@ -55,6 +55,30 @@ intent = dict(response.query_result.parameters)
 
 ![](https://github.com/louis70109/LINE-Bot-Google-TTS/blob/a396f745c7e7b8e3de33c816a6cb2aac2df6945c/readme_img/result.PNG)
 
+## Save data to Firebase
+
+> [refs](https://firebase.google.com/docs/firestore/query-data/get-data#python)
+
+- Project setting -> Service Account -> Add -> Choose Python -> Create Firebase Token JSON to current project.
+  - 中文: 專案設定 -> 服務帳戶 -> 建立 -> 選擇 Python -> 產生金鑰 -> 到專案下
+- create a Firestore Database and collection.
+
+```python
+import firebase_admin  
+from firebase_admin import credentials  
+from firebase_admin import firestore  
+  
+cred = credentials.Certificate(os.getenv('FIREBASE_CREDENTIALS'))  
+firebase_admin.initialize_app(cred)  
+db = firestore.client()  
+  
+  
+def create_user(user_dict):  
+    doc_ref = db.collection("users").document(f"user_{user_dict.get('id')}")  
+    doc_ref.set(user_dict)  
+    return {}
+```
+
 # Quick Start
 
 Install packages.

@@ -60,9 +60,11 @@ def audio_text(event):
     })
     write_audio_file(event.message.id, user_id)
     speech_content = google_tts(user_id)
-    intent = detect_intent_texts(project_id=os.getenv('DIALOGFLOW_PROJECT_ID'),
-                                 session_id=user_id,
-                                 texts=speech_content, language_code='zh-TW')
+    intent = detect_intent_texts(
+        project_id=os.getenv('DIALOGFLOW_PROJECT_ID'),
+        session_id=user_id,
+        texts=speech_content, language_code='zh-TW'
+    )
 
     create_drink({
         'uid': user_id,
