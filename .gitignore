@@ -20,5 +20,5 @@ var/
 .idea/*
 .DS_Store
 .tox/
-line-tw-devrel.json
-line-tw-devrel-firebase-adminsdk.json
+google-service-key.json
+firebase-adminsdk.json
