@@ -10,7 +10,7 @@ from linebot.models import TextMessage, MessageEvent, TextSendMessage, \
 from pydantic import BaseModel
 
 from utils.common import write_audio_file, google_tts, detect_intent_texts
-from utils.firebase import create_user, create_drink, get_user
+from utils.firebase import create_user, get_user
 
 line_bot_api = LineBotApi(os.getenv('LINE_CHANNEL_ACCESS_TOKEN'))
 handler = WebhookHandler(os.getenv('LINE_CHANNEL_SECRET'))
@@ -66,12 +66,6 @@ def audio_text(event):
         texts=speech_content, language_code='zh-TW'
     )
 
-    create_drink({
-        'uid': user_id,
-        'item': intent.get('item'),
-        'sugar': intent.get('sugar'),
-        'ice': intent.get('ice')
-    }, date=datetime.date.today())
     line_bot_api.reply_message(
         event.reply_token,
         TextSendMessage(text=str(
