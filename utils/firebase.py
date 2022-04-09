@@ -21,7 +21,52 @@ def create_user(user_dict):
     return {}
 
 
-def create_drink(drink_dict, date):
-    doc_ref = db.collection("drinks").document(f"{date}drink_{drink_dict.get('uid')}")
-    doc_ref.set(drink_dict)
+def get_all_collection(collection):
+    return db.collection(collection).get()
+
+
+def get_collection(collection, name):
+    doc_ref = db.collection(collection).document(f"{collection}_{name}")
+    if doc_ref.get().exists:
+        return doc_ref.get().to_dict()
+    return None
+
+
+def create_audio(audio_dict):
+    # id, name, bucket
+    doc_ref = db.collection("audios").document(
+        f"audios_{audio_dict.get('bucket')}_{audio_dict.get('name')}")
+    doc_ref.set(audio_dict)
+    return {}
+
+
+def update_audio(audio_dict):
+    # id, name, bucket
+    doc_ref = db.collection("audios").document(
+        f"audios_{audio_dict.get('bucket')}_{audio_dict.get('name')}")
+    doc_ref.update(audio_dict)
+    return {}
+
+
+def create_subtitle(subtitle_dict):
+    # vid, id, description, start_time, end_time
+    doc_ref = db.collection("subtitles").document(
+        f"subtitles_{subtitle_dict.get('vid')}_{subtitle_dict.get('id')}")
+    doc_ref.set(subtitle_dict)
+    return {}
+
+
+def update_subtitle(subtitle_dict: dict):
+    # vid, id, description, start_time, end_time
+    doc_ref = db.collection("subtitles").document(
+        f"subtitles_{subtitle_dict.get('vid')}_{subtitle_dict.get('id')}")
+    doc_ref.update(subtitle_dict)
+    return {}
+
+
+def remove_subtitle(vid: str, id: str):
+    # vid, id, description, start_time, end_time
+    doc_ref = db.collection("subtitles").document(
+        f"subtitles_{vid}_{id}")
+    doc_ref.delete()
     return {}
