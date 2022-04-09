@@ -1,11 +1,15 @@
 import datetime
 import os
 
+import jieba
 import requests
 
+from utils.firebase import get_collection, update_subtitle, create_subtitle
 
-def time_transfer(seconds):
-    return str(datetime.timedelta(seconds=seconds))
+
+def time_transfer(seconds) -> str:
+    # example: 2:46:40.100
+    return str(datetime.timedelta(seconds=seconds))[:11]
 
 
 def audio_string_time(alternative) -> (str, str):
@@ -17,45 +21,63 @@ def audio_string_time(alternative) -> (str, str):
             start_time = word[0].start_time.total_seconds()
         if index == word_len - 1:
             end_time = word[index].end_time.total_seconds()
+    print('Google STT time/ arrange done.')
     return time_transfer(start_time), time_transfer(end_time)
 
 
-def intent_format_srt(response) -> str:
-    return_value = '尚無字串'
+def intent_format_srt(audio, response) -> str:
     count = 0
-    contents = ''
+    contents = 'WEBSTT\n\n'
     for result in response.results:
-        print(count)
+        subtitles: list = get_collection('subtitles', f"{audio.get('id')}_{count}")
+
         alternative = result.alternatives[0]
         start, end = audio_string_time(alternative)
-        contents += f'{str(count)}\n{start} --> {end}\n{alternative.transcript}\n\n'
-        # The first alternative is the most likely one for this portion.
-        # print(u"Transcript: {}".format(alternative.transcript))
+        seg_list = jieba.cut_for_search(alternative.transcript)
+
+        sub_dict = {
+            'vid': audio.get('id'),
+            'id': count,
+            'description': ", ".join(seg_list),
+            'start_time': start,
+            'end_time': end
+        }
+        if subtitles is None:
+            print('Creating')
+            create_subtitle(sub_dict)
+        else:
+            print('Updating')
+            update_subtitle(sub_dict)
+
+        contents += f'{str(count)}\n{start} --> {end}\n{", ".join(seg_list)}\n\n'
+
         count += 1
-        # print("Confidence: {}".format(alternative.confidence))
-    # with open("a1.srt", "w") as f:
-    #     f.writelines(contents)
+    print('Subtitle format done.')
     return contents
 
 
 def create_hackmd(content):
-    req = requests.post(url="https://api.hackmd.io/v1/notes",
-                        headers={'Authorization': f'Bearer {os.getenv("HACKMD_TOKEN")}'}, json={
+    now = datetime.datetime.now()
+    current_time = now.strftime("%H:%M:%S")
+    print('Start upload Note' + current_time)
+    content = f'---\ntitle: 字幕{current_time}\n---\n\n' + content
+    requests.post(url="https://api.hackmd.io/v1/notes",
+                  headers={'Authorization': f'Bearer {os.getenv("HACKMD_TOKEN")}'}, json={
             "title": "New note",
             "content": content,
-            "readPermission": "owner",
+            "readPermission": "everyone",
             "writePermission": "owner",
             "commentPermission": "everyone"
         })
-    print(req.json())
+    print('HackMD upload done.')
 
 
-def transcribe_gcs():
+def transcribe_gcs(bucket, audio):
     """Asynchronously transcribes the audio file specified by the gcs_uri."""
     from google.cloud import speech
 
     client = speech.SpeechClient()
-    gcs_uri = f"gs://{os.getenv('GOOGLE_BUCKET')}/Sequence.mp3"
+    gcs_uri = f"gs://{bucket}/{audio}"
     audio = speech.RecognitionAudio(uri=gcs_uri)
     config = speech.RecognitionConfig(
         encoding=speech.RecognitionConfig.AudioEncoding.ENCODING_UNSPECIFIED,

@@ -16,3 +16,4 @@ google-cloud-dialogflow
 firebase_admin
 google-cloud-firestore
 requests
+jieba
