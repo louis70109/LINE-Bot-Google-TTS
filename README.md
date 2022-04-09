@@ -109,6 +109,19 @@ sh change_bot_url.sh BOT_ACCESS_TOKEN https://YOUR_DOMAIN/webhooks/line
 
 TODO
 
+
+## Subtitle type
+
+Audio:
+```python
+audios_{audio_dict.get('bucket')}_{audio_dict.get('name')}
+```
+
+Subtitle:
+```python
+subtitles_{audio.get('id')}_{count}
+```
+
 # LICENSE
 
 MIT
