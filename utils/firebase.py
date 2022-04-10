@@ -25,6 +25,10 @@ def get_all_collection(collection):
     return db.collection(collection).get()
 
 
+def get_audios_collection(collection, vid: str):
+    return db.collection(collection).where('vid', '==', vid).get()
+
+
 def get_collection(collection, name):
     doc_ref = db.collection(collection).document(f"{collection}_{name}")
     if doc_ref.get().exists:

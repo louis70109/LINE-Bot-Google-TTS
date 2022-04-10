@@ -31,6 +31,7 @@ from fastapi.responses import HTMLResponse
 from utils.stt import transcribe_gcs, intent_format_srt, create_hackmd
 from utils.firebase import get_collection, create_audio
 from routers import webhooks, audios, subtitles
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
@@ -39,6 +40,19 @@ templates = Jinja2Templates(directory="templates")
 app.include_router(webhooks.router)
 app.include_router(audios.router)
 app.include_router(subtitles.router)
+
+origins = [
+    "http://localhost",
+    "http://localhost:8080",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/")
@@ -51,10 +65,9 @@ async def read_item(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 
-@app.get("/upload")
-async def speech_service():
+@app.get("/upload/{name}")
+async def speech_service(name: str):
     bucket = os.getenv('GOOGLE_BUCKET')
-    name = 'Sequence'
     audio = get_collection('audios', f"{bucket}_{name}")
     if audio == {} or audio is None:  # empty
         audio = {

@@ -14,6 +14,7 @@ router = APIRouter(
 
 @router.get("/")
 def get_audios():
+    # bucket, id, name
     audios = []
     for audio in get_all_collection('audios'):
         audios.append(audio.to_dict())

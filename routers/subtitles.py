@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 
 from utils.firebase import get_all_collection, get_collection, update_subtitle, create_subtitle, \
-    remove_subtitle
+    remove_subtitle, get_audios_collection
 
 router = APIRouter(
     prefix="/subtitles",
@@ -10,17 +10,17 @@ router = APIRouter(
 )
 
 
-@router.get("/")
-def get_subtitles():
+@router.get("/{vid}")
+def get_subtitles(vid:str):
     subtitles = []
-    for subtitle in get_all_collection('subtitles'):
+    for subtitle in get_audios_collection('subtitles', vid):
         subtitles.append(subtitle.to_dict())
     return subtitles
 
 
-@router.get("/{subtitle_id}/{id}")
-def get_specific_subtitle(subtitle_id: str, id: str) -> list:
-    subtitle = get_collection('subtitles', f"{subtitle_id}_{id}")
+@router.get("/{vid}/{id}")
+def get_specific_subtitle(vid: str, id: str) -> list:
+    subtitle = get_collection('subtitles', f"{vid}_{id}")
     return subtitle
 
 
