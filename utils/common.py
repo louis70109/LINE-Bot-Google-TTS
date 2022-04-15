@@ -88,3 +88,22 @@ def detect_intent_texts(project_id, session_id, texts, language_code):
         }
     else:
         return None
+
+
+
+def contents_dict_to_vtt(contents):
+    # [{
+    #         "description": "我覺不得了。",
+    #         "vid": "7964313717",
+    #         "id": 0,
+    #         "end_time": "0:00:59.200",
+    #         "start_time": "0:00:00"},
+    #         {"id": 1,
+    #          "end_time": "0:01:59.600",
+    #          "start_time": "0:00:59.900",
+    #          "vid": "7964217a13717",
+    #          "description": "Ok有經驗？"}]
+    result = 'WEBSTT\n\n'
+    for content in contents:
+        result += f'{content.get("id")}\n{content.get("start_time")} --> {content.get("end_time")}\n{content.get("description")}\n\n'
+    return result

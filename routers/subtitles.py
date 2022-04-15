@@ -11,7 +11,7 @@ router = APIRouter(
 
 
 @router.get("/{vid}")
-def get_subtitles(vid:str):
+def get_subtitles(vid: str) -> list:
     subtitles = []
     for subtitle in get_audios_collection('subtitles', vid):
         subtitles.append(subtitle.to_dict())
@@ -19,7 +19,7 @@ def get_subtitles(vid:str):
 
 
 @router.get("/{vid}/{id}")
-def get_specific_subtitle(vid: str, id: str) -> list:
+def get_specific_subtitle(vid: str, id: str) -> dict:
     subtitle = get_collection('subtitles', f"{vid}_{id}")
     return subtitle
 

@@ -3,6 +3,7 @@ import os
 
 import jieba
 import requests
+from google.cloud import storage
 
 from utils.firebase import get_collection, update_subtitle, create_subtitle
 
@@ -25,9 +26,9 @@ def audio_string_time(alternative) -> (str, str):
     return time_transfer(start_time), time_transfer(end_time)
 
 
-def intent_format_srt(audio, response) -> str:
+def intent_format_srt(audio, response) -> list:
     count = 0
-    contents = 'WEBSTT\n\n'
+    contents = []
     for result in response.results:
         subtitles: list = get_collection('subtitles', f"{audio.get('id')}_{count}")
 
@@ -49,8 +50,7 @@ def intent_format_srt(audio, response) -> str:
             print('Updating')
             update_subtitle(sub_dict)
 
-        contents += f'{str(count)}\n{start} --> {end}\n{", ".join(seg_list)}\n\n'
-
+        contents.append(sub_dict)
         count += 1
     print('Subtitle format done.')
     return contents
@@ -94,3 +94,4 @@ def transcribe_gcs(bucket, audio):
     return response
     # Each result is for a consecutive portion of the audio. Iterate through
     # them to get the transcripts for the entire audio file.
+

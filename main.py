@@ -2,6 +2,10 @@ import os
 import tempfile
 import uuid
 
+import requests
+
+from utils.common import upload_data_to_gcs, contents_dict_to_vtt
+
 if os.getenv('API_ENV') != 'production':
     from dotenv import load_dotenv
 
@@ -25,10 +29,9 @@ except:
 
 import uvicorn
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse
-from utils.stt import transcribe_gcs, intent_format_srt, create_hackmd
+from utils.stt import transcribe_gcs, intent_format_srt
 from utils.firebase import get_collection, create_audio
 from routers import webhooks, audios, subtitles
 from fastapi.middleware.cors import CORSMiddleware
@@ -60,11 +63,6 @@ async def root():
     return {"message": "Hello World!"}
 
 
-@app.get("/liff", response_class=HTMLResponse)
-async def read_item(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
-
-
 @app.get("/upload/{name}")
 async def speech_service(name: str):
     bucket = os.getenv('GOOGLE_BUCKET')
@@ -79,9 +77,27 @@ async def speech_service(name: str):
     intent = transcribe_gcs(bucket, f'{name}.mp3')
 
     contents = intent_format_srt(audio, intent)
-    create_hackmd(contents)
-
+    vtt_string_result = contents_dict_to_vtt(contents)
+    upload_data_to_gcs(bucket, vtt_string_result, f'{name}.vtt')
     return "Done"
+
+
+@app.post("/upload")
+def upload_file(info: dict):
+    # [{
+    #         "description": "我覺",
+    #         "vid": "7964313717",
+    #         "id": 0,
+    #         "end_time": "0:00:59.200",
+    #         "start_time": "0:00:00"}]
+    vtt_string = contents_dict_to_vtt(info.get("contents"))
+    res = upload_data_to_gcs(os.getenv('GOOGLE_BUCKET'), vtt_string, f'{info.get("name")}.vtt')
+    return res
+
+
+@app.get("/bucket")
+def speech_service():
+    return os.getenv('GOOGLE_BUCKET')
 
 
 if __name__ == "__main__":
