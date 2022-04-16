@@ -78,7 +78,7 @@ async def speech_service(name: str):
 
     contents = intent_format_srt(audio, intent)
     vtt_string_result = contents_dict_to_vtt(contents)
-    upload_data_to_gcs(bucket, vtt_string_result, f'{name}.vtt')
+    upload_data_to_gcs(bucket, vtt_string_result, f'{name}.vtt', meta='text/vtt')
     return "Done"
 
 
@@ -91,7 +91,11 @@ def upload_file(info: dict):
     #         "end_time": "0:00:59.200",
     #         "start_time": "0:00:00"}]
     vtt_string = contents_dict_to_vtt(info.get("contents"))
-    res = upload_data_to_gcs(os.getenv('GOOGLE_BUCKET'), vtt_string, f'{info.get("name")}.vtt')
+    res = upload_data_to_gcs(
+        os.getenv('GOOGLE_BUCKET'),
+        vtt_string,
+        f'{info.get("name")}.vtt',
+        meta='text/vtt')
     return res
 
 

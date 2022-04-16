@@ -9,7 +9,7 @@ from linebot.models import TextMessage, MessageEvent, TextSendMessage, \
     AudioMessage
 from pydantic import BaseModel
 
-from utils.common import write_audio_file, google_tts, detect_intent_texts
+from utils.common import write_audio_file, detect_intent_texts
 from utils.firebase import create_user, get_user
 
 line_bot_api = LineBotApi(os.getenv('LINE_CHANNEL_ACCESS_TOKEN'))

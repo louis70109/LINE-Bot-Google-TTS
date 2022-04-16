@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 
+from utils.common import contents_dict_to_vtt
 from utils.firebase import get_all_collection, get_collection, update_subtitle, create_subtitle, \
     remove_subtitle, get_audios_collection
 
@@ -11,10 +12,13 @@ router = APIRouter(
 
 
 @router.get("/{vid}")
-def get_subtitles(vid: str) -> list:
+def get_subtitles(vid: str, vtt: str = '0') -> list:
     subtitles = []
     for subtitle in get_audios_collection('subtitles', vid):
         subtitles.append(subtitle.to_dict())
+
+    if vtt != "0":
+        return contents_dict_to_vtt(subtitles)
     return subtitles
 
 

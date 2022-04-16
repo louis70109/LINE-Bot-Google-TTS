@@ -10,7 +10,12 @@ from utils.firebase import get_collection, update_subtitle, create_subtitle
 
 def time_transfer(seconds) -> str:
     # example: 2:46:40.100
-    return str(datetime.timedelta(seconds=seconds))[:11]
+    time = str(datetime.timedelta(seconds=seconds))[:11]
+    import re
+    if re.search("[0-9]:[0-9]+:[0-9]+", time):
+        time_obj = time.split(":")
+        time = time_obj[0]+":"+time_obj[1]+":"+time_obj[2]+".000"
+    return time
 
 
 def audio_string_time(alternative) -> (str, str):

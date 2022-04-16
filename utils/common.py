@@ -4,12 +4,16 @@ from linebot import LineBotApi
 from google.cloud import speech, storage, dialogflow
 
 
-def upload_data_to_gcs(bucket_name, data, target_key):
+def upload_data_to_gcs(bucket_name, data, target_key, meta=None):
+    if type(data) == str:
+        data = data.encode('big5')
+
     try:
         client = storage.Client()
         bucket = client.bucket(bucket_name)
-        bucket.blob(target_key).upload_from_string(data)
-        return bucket.blob(target_key).public_url
+        blob = bucket.blob(target_key)
+        blob.upload_from_string(data, content_type=meta)
+        return blob.public_url
 
     except Exception as e:
         print(e)
@@ -29,36 +33,6 @@ def write_audio_file(message_id, user_id):
         total += chunk
 
     upload_data_to_gcs(os.getenv('GOOGLE_BUCKET'), total, f'{user_id}.mp3')
-
-
-def google_tts(user_id):
-    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
-    # Instantiates a client
-    client = speech.SpeechClient()
-
-    # The name of the audio file to transcribe
-    gcs_uri = f"gs://{os.getenv('GOOGLE_BUCKET')}/{user_id}.mp3"
-
-    audio = speech.RecognitionAudio(uri=gcs_uri)
-    config = speech.RecognitionConfig(
-        encoding=speech.RecognitionConfig.AudioEncoding.WEBM_OPUS,
-        sample_rate_hertz=16000,
-        language_code="zh-TW",
-    )
-
-    operation = client.long_running_recognize(config=config, audio=audio)
-
-    print("Waiting for operation to complete...")
-    response = operation.result(timeout=15)
-
-    # Each result is for a consecutive portion of the audio. Iterate through
-    # them to get the transcripts for the entire audio file.
-    for result in response.results:
-        # The first alternative is the most likely one for this portion.
-        print(u"Transcript: {}".format(result.alternatives[0].transcript))
-        print("Confidence: {}".format(result.alternatives[0].confidence))
-        # if > 0.9
-        return result.alternatives[0].transcript
 
 
 def detect_intent_texts(project_id, session_id, texts, language_code):
@@ -90,20 +64,35 @@ def detect_intent_texts(project_id, session_id, texts, language_code):
         return None
 
 
-
 def contents_dict_to_vtt(contents):
     # [{
     #         "description": "我覺不得了。",
     #         "vid": "7964313717",
     #         "id": 0,
     #         "end_time": "0:00:59.200",
-    #         "start_time": "0:00:00"},
+    #         "start_time": "0:00.00"},
     #         {"id": 1,
     #          "end_time": "0:01:59.600",
     #          "start_time": "0:00:59.900",
     #          "vid": "7964217a13717",
     #          "description": "Ok有經驗？"}]
-    result = 'WEBSTT\n\n'
-    for content in contents:
-        result += f'{content.get("id")}\n{content.get("start_time")} --> {content.get("end_time")}\n{content.get("description")}\n\n'
+    result = 'WEBVTT\n\n'
+    content_len, idx, count = len(contents), 0, 0
+
+    # Arrange firebase data list sequence
+    while True:
+        try:
+            content = contents[idx]
+            if content.get("id") == count:
+                result += f'{content.get("id")}\n{content.get("start_time")} --> {content.get("end_time")}\n{content.get("description")}\n\n'
+                contents.pop(idx)
+                count += 1
+                idx = 0
+            else:
+                idx += 1
+            if len(contents) == 0:
+                break
+        except IndexError:
+            break
+
     return result
