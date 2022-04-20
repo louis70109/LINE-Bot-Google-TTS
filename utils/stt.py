@@ -12,7 +12,7 @@ def time_transfer(seconds) -> str:
     # example: 2:46:40.100
     time = str(datetime.timedelta(seconds=seconds))[:11]
     import re
-    if re.search("[0-9]:[0-9]+:[0-9]+", time):
+    if re.search("[0-9]*:[0-9]+:[0-9]+", time) and len(time) == 7:
         time_obj = time.split(":")
         time = time_obj[0]+":"+time_obj[1]+":"+time_obj[2]+".000"
     return time
